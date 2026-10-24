@@ -189,8 +189,8 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
   }
   addEventListener('resize',resize); resize();
 
-  /* MOBILE ONLY: animation ko left taraf shift karo (screen width ka 20%) taake right side ka hissa (bottle) trim na ho */
-  var SHIFT=0.2;
+  
+  var SHIFT=0.5;
   function isMobile(){return innerWidth<=760}
 
   function paint(im,alpha){
