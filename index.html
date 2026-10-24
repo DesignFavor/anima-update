@@ -59,6 +59,7 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
 .end h2{font-size:clamp(34px,7vw,110px);letter-spacing:.06em;text-transform:uppercase}
 
 @media (max-width:760px){
+  .stage{right:20%;left:0}   /* MOBILE ONLY: background animation par right side se 20% margin */
   .stage::after{background:linear-gradient(0deg,rgba(5,8,15,.82),rgba(5,8,15,.15) 70%)}
   section{align-items:flex-end;padding-bottom:14vh}
   .bar,.brand small{display:none}
@@ -184,7 +185,8 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
   var cw=0,ch=0;
   function resize(){
     var dpr=Math.min(devicePixelRatio||1,2);
-    cw=Math.round(innerWidth*dpr); ch=Math.round(innerHeight*dpr);
+    var w=cv.parentElement.clientWidth||innerWidth;   // stage ki actual width (mobile par 80%)
+    cw=Math.round(w*dpr); ch=Math.round(innerHeight*dpr);
     cv.width=cw; cv.height=ch; last=-1;
   }
   addEventListener('resize',resize); resize();
