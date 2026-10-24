@@ -10,9 +10,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#05080f; --sand:#f1e6d2; --gold:#d9a95b; --mute:rgba(241,230,210,.74);
+  --ink:#05080f; --sand:#f1e6d2; --gold:#d9a95b; --mute:rgba(241,230,210,.78);
   --serif:'Cormorant Garamond','Times New Roman',serif; --sans:'Jost','Helvetica Neue',Arial,sans-serif;
-  --pad:clamp(20px,5vw,72px);
+  --pad:clamp(22px,5vw,72px);
+  --ease:cubic-bezier(.22,1,.36,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html.lenis,html.lenis body{height:auto}
@@ -20,28 +21,63 @@ html.lenis,html.lenis body{height:auto}
 .lenis.lenis-stopped{overflow:hidden}
 body{background:var(--ink);color:var(--sand);font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
+/* ---------- background animation ---------- */
 .stage{position:fixed;inset:0;z-index:0;background:var(--ink) url(assets/poster.jpg) center/cover no-repeat}
 #cv{width:100%;height:100%;display:block;opacity:0;transition:opacity .35s}
 #cv.on{opacity:1}
 .stage::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(90deg,rgba(5,8,15,.6) 0%,rgba(5,8,15,.12) 55%,rgba(5,8,15,0) 100%),
-             linear-gradient(0deg,rgba(5,8,15,.45),rgba(5,8,15,0) 40%)}
+  background:linear-gradient(90deg,rgba(5,8,15,.62) 0%,rgba(5,8,15,.14) 55%,rgba(5,8,15,0) 100%),
+             linear-gradient(0deg,rgba(5,8,15,.5),rgba(5,8,15,0) 42%)}
 
+/* ---------- chrome ---------- */
 header{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;
-  padding:calc(22px + env(safe-area-inset-top,0px)) var(--pad) 22px;mix-blend-mode:difference}
+  padding:calc(22px + env(safe-area-inset-top,0px)) var(--pad) 22px;mix-blend-mode:difference;pointer-events:none}
 .brand{font-family:var(--serif);font-size:clamp(15px,1.6vw,19px);letter-spacing:.32em;text-transform:uppercase}
 .brand small{font-family:var(--sans);font-size:.6em;letter-spacing:.3em;opacity:.7;margin-left:.8em}
 
 .bar{position:fixed;right:var(--pad);top:50%;z-index:10;width:1px;height:120px;background:rgba(241,230,210,.25);transform:translateY(-50%)}
 .bar i{display:block;width:100%;height:100%;background:var(--gold);transform-origin:top;transform:scaleY(0)}
 
-/* loader */
+.count{position:fixed;right:var(--pad);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:10;
+  font-family:var(--serif);font-size:15px;letter-spacing:.2em;color:var(--mute);font-variant-numeric:tabular-nums}
+.count b{font-weight:400;color:var(--gold)}
+
 .load{position:fixed;left:0;top:0;height:2px;width:100%;z-index:20;background:var(--gold);transform-origin:left;transform:scaleX(0);transition:opacity .6s .2s}
 .load.done{opacity:0}
 
-main{position:relative;z-index:5}
-section{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:12vh var(--pad)}
-section .copy{max-width:min(560px,100%);opacity:0;transform:translate3d(0,24px,0);will-change:opacity,transform}
+.scroll{position:fixed;left:var(--pad);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:10;
+  font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:14px;transition:opacity .6s}
+.scroll::after{content:"";width:38px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleX(0);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}51%{transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+/* ---------- single fixed text spot ---------- */
+.texts{position:fixed;inset:0;z-index:5;pointer-events:none}
+.slide{
+  position:absolute;left:var(--pad);top:0;bottom:0;
+  width:min(620px,calc(100% - var(--pad)*2));
+  display:flex;flex-direction:column;justify-content:center;
+  visibility:hidden;transition:visibility 0s linear 1s;
+}
+.slide.hero{width:calc(100% - var(--pad)*2)}
+.slide.on{visibility:visible;transition-delay:0s}
+.slide.past,.slide.future{visibility:hidden}
+
+/* every line inside a slide animates on its own, staggered */
+.slide > *{
+  opacity:0;
+  transform:translate3d(0,34px,0);
+  filter:blur(10px);
+  transition:opacity .55s ease, transform .6s var(--ease), filter .55s ease;
+  transition-delay:0s;
+  will-change:opacity,transform,filter;
+}
+.slide.past > *{transform:translate3d(0,-26px,0)}
+.slide.on > *{
+  opacity:1;transform:none;filter:blur(0);
+  transition:opacity 1s ease, transform 1.3s var(--ease), filter 1s ease;
+  transition-delay:calc(var(--i,0) * 110ms + 180ms);
+}
+
 .kicker{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:22px;display:block}
 h1,h2{font-family:var(--serif);font-weight:300;line-height:.98;letter-spacing:-.01em}
 h1{font-size:clamp(54px,11vw,168px)}
@@ -49,21 +85,23 @@ h2{font-size:clamp(38px,6vw,92px)}
 h2 em,h1 em{font-style:italic;font-weight:300}
 .tag{font-family:var(--serif);font-style:italic;font-size:clamp(20px,2.2vw,30px);color:var(--gold);margin:14px 0 0}
 p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var(--mute);max-width:44ch}
-.hero{align-items:flex-end;padding-bottom:14vh}
-.hero .copy{max-width:none}
 .hero p.sub{font-family:var(--serif);font-style:italic;font-size:clamp(20px,2.4vw,34px);margin-top:18px;color:var(--mute)}
-.scroll{position:fixed;left:var(--pad);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:10;
-  font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:14px;transition:opacity .5s}
-.scroll::after{content:"";width:38px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);animation:drip 2.2s ease-in-out infinite}
-@keyframes drip{0%{transform:scaleX(0);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}51%{transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
 .end h2{font-size:clamp(34px,7vw,110px);letter-spacing:.06em;text-transform:uppercase}
 
+/* ---------- scroll length (each step = one slide) ---------- */
+.step{height:120vh;height:120svh}
+.step:last-child{height:100vh;height:100svh}
+
 @media (max-width:760px){
-  .stage::after{background:linear-gradient(0deg,rgba(5,8,15,.82),rgba(5,8,15,.15) 70%)}
-  section{align-items:flex-end;padding-bottom:14vh}
+  .stage::after{background:linear-gradient(0deg,rgba(5,8,15,.5),rgba(5,8,15,0) 45%)}   /* halka overlay, sirf neeche text ke peeche */
+  .slide{justify-content:flex-end;padding-bottom:calc(14vh + env(safe-area-inset-bottom,0px));text-shadow:0 2px 18px rgba(5,8,15,.55)}
   .bar,.brand small{display:none}
+  .count{display:none}
 }
-@media (prefers-reduced-motion:reduce){section .copy{opacity:1!important;transform:none!important}.scroll::after{animation:none}}
+@media (prefers-reduced-motion:reduce){
+  .slide > *,.slide.on > *{transition:opacity .3s linear!important;transform:none!important;filter:none!important;transition-delay:0s!important}
+  .scroll::after{animation:none}
+}
 </style>
 </head>
 <body>
@@ -72,84 +110,98 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
 <div class="stage"><canvas id="cv"></canvas></div>
 <header><div class="brand">Anima Désertique<small>Jamaloil</small></div></header>
 <div class="bar"><i id="bar"></i></div>
+<div class="count" id="count"><b id="cur">01</b> / 11</div>
 <div class="scroll" id="hint">Scroll</div>
 
-<main>
-  <section class="hero"><div class="copy">
+<!-- all text lives in ONE fixed place; slides swap with fade in / fade out -->
+<div class="texts" id="texts">
+  <div class="slide hero">
     <span class="kicker">Nomadic memory · Niche perfumery</span>
     <h1>Anima <em>Désertique</em></h1>
     <p class="sub">The desert within.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">01 / Substance</span>
     <h2>A drop already <em>holds a memory.</em></h2>
     <p class="t">Five weeks of maturation. The oils rest, the accords take shape. Through the Nectar Fusion process, matter becomes spirit.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">02 / Zāwiya</span>
     <h2>A threshold <em>within a threshold.</em></h2>
     <p class="t">Inspired by the doors of Moroccan sanctuaries, the bottle holds the fragrance within a symbol of protection and light.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">03 / The desert is an inner landscape</span>
     <h2>Silence. <em>Space. Depth.</em></h2>
     <p class="t">A blue veil carried by the wind — the nomadic memory of Redy Jihar's Berber and Tuareg roots, made visible.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">Five inner landscapes · 05</span>
     <h2>Pêche Nude</h2><p class="tag">Nectar of light</p>
     <p class="t">A raw peach meets the warmth of the desert — velvety, luminous, sensual. A caress away.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">Five inner landscapes · 04</span>
     <h2>Oud Aura Sablé</h2><p class="tag">Inner light</p>
     <p class="t">An eclipse becomes fragrance. The wind carries it across the dunes, where it meets suede and the depth of oud.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">Five inner landscapes · 03</span>
     <h2>Hiya du Bois</h2><p class="tag">Inner beauty</p>
     <p class="t">The secret of a hidden beauty. Spices, flowers and woods meet myrrh, wrapped in incense and resins.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">Five inner landscapes · 02</span>
     <h2>Palm Encensé</h2><p class="tag">Talisman of the soul</p>
     <p class="t">Light awakens incense. A personal ritual, open to a universal spirituality.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">Five inner landscapes · 01</span>
     <h2>Imperfect Rose</h2><p class="tag">Unrepeatable beauty</p>
     <p class="t">An imaginary rose blooms in the desert. Imperfection reveals the extraordinary.</p>
-  </div></section>
+  </div>
 
-  <section><div class="copy">
+  <div class="slide">
     <span class="kicker">From fragrance to skin</span>
     <h2>The desert becomes <em>a personal presence.</em></h2>
     <p class="t">Form preserves. Substance tells a story. Skin interprets.</p>
-  </div></section>
+  </div>
 
-  <section class="end"><div class="copy">
+  <div class="slide end">
     <h2>Anima Désertique</h2>
     <p class="t">The origin of pure essence.</p>
-  </div></section>
+  </div>
+</div>
+
+<!-- scroll length only: one empty step per slide -->
+<main id="steps">
+  <div class="step"></div><div class="step"></div><div class="step"></div><div class="step"></div>
+  <div class="step"></div><div class="step"></div><div class="step"></div><div class="step"></div>
+  <div class="step"></div><div class="step"></div><div class="step"></div>
 </main>
 
 <script>
 (function(){
   var TOTAL=523;                                   // frames extracted from your video (24fps)
-  var small=Math.min(innerWidth,innerHeight)<700 && innerWidth<900;
-  var DIR=small?'assets/f720/':'assets/f1080/';
+  /* Mobile par bhi f1080 frames (pehle f720 the, jo screen height tak upscale hokar blurry lagte the).
+     Data kam chahiye to 'assets/f1080/' ki jagah mobile ke liye 'assets/f720/' wapas kar do. */
+  var DIR='assets/f1080/';
   var cv=document.getElementById('cv'), ctx=cv.getContext('2d',{alpha:false});
   var bar=document.getElementById('bar'), hint=document.getElementById('hint'), loadEl=document.getElementById('load');
-  var secs=[].slice.call(document.querySelectorAll('section .copy'));
-  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cur=document.getElementById('cur');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var N=slides.length;
+
+  /* stagger index for each line inside a slide */
+  slides.forEach(function(s){ [].slice.call(s.children).forEach(function(el,i){ el.style.setProperty('--i',i) }) });
 
   /* ---------- frame loading (coarse first, then fill gaps) ---------- */
   var imgs=new Array(TOTAL), ok=new Array(TOTAL), loaded=0;
@@ -186,11 +238,12 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
     var dpr=Math.min(devicePixelRatio||1,2);
     cw=Math.round(innerWidth*dpr); ch=Math.round(innerHeight*dpr);
     cv.width=cw; cv.height=ch; last=-1;
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';   // upscale hote waqt sharper
   }
   addEventListener('resize',resize); resize();
 
-  
-  var SHIFT=0.6;
+  /* MOBILE ONLY: animation ko left shift karo.  + = left, - = right, 0 = center */
+  var SHIFT=0.55;
   function isMobile(){return innerWidth<=760}
 
   function paint(im,alpha){
@@ -217,7 +270,20 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
     sc.onload=function(){try{lenis=new Lenis({duration:1.35,easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t))},smoothWheel:true})}catch(e){}};
     document.head.appendChild(sc)})();
   var shown=0;
-  function progress(){var m=document.documentElement.scrollHeight-innerHeight;var y=lenis?lenis.scroll:(window.scrollY||0);return m>0?Math.min(1,Math.max(0,y/m)):0}
+  function scrollY(){return lenis?lenis.scroll:(window.scrollY||0)}
+  function progress(){var m=document.documentElement.scrollHeight-innerHeight;var y=scrollY();return m>0?Math.min(1,Math.max(0,y/m)):0}
+
+  /* ---------- text slides: one active, rest are past / future ---------- */
+  var active=-1;
+  function setActive(n){
+    if(n===active) return; active=n;
+    for(var i=0;i<N;i++){
+      var c=slides[i].classList;
+      c.toggle('on',i===n); c.toggle('past',i<n); c.toggle('future',i>n);
+    }
+    cur.textContent=(n+1<10?'0':'')+(n+1);
+  }
+  setActive(0);
 
   function tick(t){
     if(lenis) lenis.raf(t);
@@ -227,13 +293,12 @@ p.t{margin-top:26px;font-size:clamp(15px,1.25vw,17px);line-height:1.75;color:var
 
     bar.style.transform='scaleY('+p+')';
     hint.style.opacity=p>0.02?0:1;
-    var vh=innerHeight;
-    for(var i=0;i<secs.length;i++){
-      var r=secs[i].getBoundingClientRect(), c=(r.top+r.height/2)/vh, d=Math.abs(c-0.55);
-      var o=reduce?1:Math.max(0,Math.min(1,1.25-d*2.4));
-      secs[i].style.opacity=o;
-      secs[i].style.transform='translate3d(0,'+((1-o)*(c<0.55?-24:24))+'px,0)';
-    }
+
+    /* which step is the viewer on? each step is a bit taller than the screen */
+    var stepH=document.querySelector('.step').offsetHeight||innerHeight;
+    var idx=Math.floor(scrollY()/stepH+0.35);
+    setActive(Math.max(0,Math.min(N-1,idx)));
+
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
